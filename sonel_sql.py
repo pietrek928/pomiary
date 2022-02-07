@@ -1,8 +1,8 @@
 from datetime import datetime
-from sqlite3 import Cursor
 from typing import Type, TypeVar, Generator
 
 from pydantic import BaseModel
+from pysqlite3 import Cursor
 
 
 class Settings(BaseModel):

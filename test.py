@@ -1,4 +1,4 @@
-from sqlite3 import connect
+from pysqlite3 import connect
 
 from latex_utils import Document, Ctx
 from meas_render import format_measure_table
