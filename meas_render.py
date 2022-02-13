@@ -71,6 +71,6 @@ def format_measure_table(cur: Cursor, measure_descr: MeasureDescriptor, place_id
     meas_data = _get_measure_data(cur, place_ids, measure_descr.measure_ids)
     return LongTable(
         caption=measure_descr.title,
-        columns=('Miejsce',) + measure_descr.get_columns(),
+        columns=('Badany punkt',) + measure_descr.get_columns(),
         rows=_generate_measurements_rows(measure_descr, meas_data),
     )

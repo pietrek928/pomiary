@@ -16,13 +16,19 @@ class Ctx:
             v.render(self)
         else:
             self._print(v)
+        return self
 
     def break_(self):
         self._print('\\\\')
+        return self
 
     def cmd(self, p, *args):
         args = ''.join(f'{{{a}}}' for a in args)
         self._print(f'\\{p}{args}')  # TODO: escape ?
+        return self
+
+    def usepackage(self, p):
+        return self.cmd('usepackage', p)
 
     @contextmanager
     def begin(self, v, *args):
@@ -76,7 +82,7 @@ class Document(LatexObject):
         if self.date:
             ctx.cmd('date', self.date)
         with ctx.begin('document'):
-            ctx.cmd('maketitle')
+            # ctx.cmd('maketitle')
             if self.body is not None:
                 self.body.render(ctx)
 
@@ -93,13 +99,40 @@ def _render_to_str(v: ContentItem) -> str:
 class Content(LatexObject):
     items: Iterable[ContentItem] = ()
 
-    @classmethod
-    def from_items(cls, *items):
-        return cls(items=tuple(items))
+    def __init__(self, *items):
+        super().__init__(items=tuple(items))
 
     def render(self, ctx: Ctx):
         for item in self.items:
             ctx.put(item)
+
+
+class Center(Content):
+    def render(self, ctx: Ctx):
+        with ctx.begin('center'):
+            super().render(ctx)
+
+
+class ZeroSkipHeader(LatexObject):
+    def render(self, ctx: Ctx):
+        ctx.put('''
+\\usepackage{etoolbox}
+\\newcommand{\\zerodisplayskips}{%
+  \\setlength{\\abovedisplayskip}{0pt}%
+  \\setlength{\\belowdisplayskip}{0pt}%
+  \\setlength{\\abovedisplayshortskip}{0pt}%
+  \\setlength{\\belowdisplayshortskip}{0pt}}
+\\appto{\\normalsize}{\\zerodisplayskips}
+\\appto{\\small}{\\zerodisplayskips}
+\\appto{\\footnotesize}{\\zerodisplayskips}
+''')
+
+
+class TextBox(Content):
+    def render(self, ctx: Ctx):
+        ctx.put('\\fbox{\\parbox{\\textwidth}{')
+        super().render(ctx)
+        ctx.put('}}')
 
 
 class Math(LatexObject):
@@ -109,15 +142,29 @@ class Math(LatexObject):
         super().__init__(t=t)
 
     def render(self, ctx: Ctx):
-        ctx.put(f'$ {_render_to_str(self.t)} $')
+        ctx.put(f'${{{_render_to_str(self.t)}}}$')
+
+
+class MultiLine(LatexObject):
+    items: Tuple[ContentItem, ...]
+
+    def __init__(self, *items):
+        super().__init__(items=tuple(items))
+
+    def render(self, ctx: Ctx):
+        content = ''.join(
+            f'\\hbox{{\\strut {_render_to_str(v)}}}'
+            for v in self.items
+        )
+        ctx.put(f'\\vtop{{{content}}}')
 
 
 class LongTable(LatexObject):
     caption: ContentItem = ''
     first_header: Optional[ContentItem] = None
     columns: Tuple[ContentItem, ...] = ()
-    foot: ContentItem = Content.from_items('\\hline')
-    last_foot: ContentItem = Content.from_items('\\hline')
+    foot: ContentItem = Content('\\hline')
+    last_foot: ContentItem = Content('\\hline')
     rows: Iterable[Tuple[ContentItem, ...]] = ()
 
     def _render_columns(self, ctx: Ctx):
@@ -143,7 +190,7 @@ class LongTable(LatexObject):
         col_descr = '|'.join('l' for l in self.columns)
         with ctx.begin('longtable', f'|{col_descr}|'):
             ctx.cmd('caption', _render_to_str(self.caption))
-            ctx.cmd('label', 'tab:long')
+            # ctx.cmd('label', 'tab:long')
             ctx.break_()
 
             if self.first_header is not None:
@@ -161,3 +208,24 @@ class LongTable(LatexObject):
 
             for row in self.rows:
                 self._render_row(ctx, row)
+
+
+class MeasurePageSetup(LatexObject):
+    def _head(self):
+        return '''
+\\footnotesize
+CE 1/09/2021/Ur \\hfill Data pomiarów: \\newline
+Wykonawca pomiarów \\hfill \\quad \\newline
+Miejsce przeprowadzenia pomiarów: \\hfill
+        '''
+
+    def _foot(self):
+        return 'CE 1/09/2021/Ur\\quad\\thepage/\\pageref{LastPage}'
+
+    def render(self, ctx: Ctx):
+        ctx.usepackage('lastpage') \
+            .usepackage('fancyhdr') \
+            .cmd('pagestyle', 'fancy') \
+            .cmd('fancyhf', '') \
+            .cmd('fancyhead[CO]', self._head()) \
+            .cmd('rfoot', self._foot())
