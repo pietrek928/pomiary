@@ -96,6 +96,11 @@ def _render_to_str(v: ContentItem) -> str:
         return str(v)
 
 
+class HLine(LatexObject):
+    def render(self, ctx: Ctx):
+        ctx.put('\\noindent\\rule{\\textwidth}{1pt}')
+
+
 class Content(LatexObject):
     items: Iterable[ContentItem] = ()
 
@@ -220,7 +225,7 @@ Miejsce przeprowadzenia pomiarów: \\hfill
         '''
 
     def _foot(self):
-        return 'CE 1/09/2021/Ur\\quad\\thepage/\\pageref{LastPage}'
+        return 'ElektroInf \\hfill CE 1/09/2021/Ur\\quad\\thepage/\\pageref{LastPage}'
 
     def render(self, ctx: Ctx):
         ctx.usepackage('lastpage') \
@@ -229,3 +234,29 @@ Miejsce przeprowadzenia pomiarów: \\hfill
             .cmd('fancyhf', '') \
             .cmd('fancyhead[CO]', self._head()) \
             .cmd('rfoot', self._foot())
+
+
+class MeasureTitlePage(LatexObject):
+    def render(self, ctx: Ctx):
+        with ctx.begin('titlepage'):
+            ctx.put(Content(
+                Center(
+                    '\\includegraphics[width=0.7\\columnwidth]{example-image-duck}'
+                ),
+                Center(
+                    HLine(), 'ElektroInf'
+                ),
+                Center('\\Huge\\textbf{{Protokół z pomiarów ochronnych}}'),
+                Center('\\Large CE 1/09/2021/Ur'),
+            )).put(
+                '\\vfill\\flushleft'
+            ).put(
+                HLine()
+            ).put('Miejsce przeprowadzenia pomiarów:').break_() \
+                .put('.').break_() \
+                .put('Data pomiarów:').break_() \
+                .put('.').break_() \
+                .put('Wykonawca pomiarów:').break_() \
+                .put('.').break_() \
+                .put('Pomiarowcy:').break_() \
+                .put('.').break_()

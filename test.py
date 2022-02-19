@@ -1,6 +1,6 @@
 from pysqlite3 import connect
 
-from latex_utils import Document, Ctx, Center, Content, MeasurePageSetup
+from latex_utils import Document, Ctx, Center, Content, MeasurePageSetup, MeasureTitlePage
 from meas_render import format_measure_table
 from measurements import TestRCD, PetlaZwarciaTNS
 
@@ -16,9 +16,12 @@ Document(
     date='',
     title='pomiary',
     author='pietrek',
-    body=Center(
-        format_measure_table(cur, PetlaZwarciaTNS(), (3, 6)),
-        format_measure_table(cur, TestRCD(), (3, 6)),
+    body=Content(
+        MeasureTitlePage(),
+        Center(
+            format_measure_table(cur, PetlaZwarciaTNS(), (3, 6)),
+            format_measure_table(cur, TestRCD(), (3, 6)),
+        ),
     )
 ).render(Ctx())
 
