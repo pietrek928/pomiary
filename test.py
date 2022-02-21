@@ -1,6 +1,7 @@
 from pysqlite3 import connect
 
-from latex_utils import Document, Ctx, Center, Content, MeasurePageSetup, MeasureTitlePage, MeasureDescriptionPage
+from latex_utils import Document, Ctx, Center, Content, MeasurePageSetup, MeasureTitlePage, MeasureDescriptionPage, \
+    IncludeFile
 from meas_render import format_measure_table
 from measurements import TestRCD, PetlaZwarciaTNS
 
@@ -23,6 +24,7 @@ Document(
             format_measure_table(cur, PetlaZwarciaTNS(), (3, 6)),
             format_measure_table(cur, TestRCD(), (3, 6)),
         ),
+        IncludeFile(fname='akty-prawne.tex'),
     )
 ).render(Ctx())
 

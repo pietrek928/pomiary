@@ -105,6 +105,13 @@ class HLine(LatexObject):
         ctx.put('\\noindent\\rule{\\textwidth}{1pt}')
 
 
+class IncludeFile(LatexObject):
+    fname: str
+
+    def render(self, ctx: Ctx):
+        ctx.cmd('include', self.fname)
+
+
 class Content(LatexObject):
     items: Iterable[ContentItem] = ()
 
@@ -254,13 +261,13 @@ class MeasurePageSetup(LatexObject):
     def _head(self):
         return '''
 \\footnotesize
-CE 1/09/2021/Ur \\hfill Data pomiarów: \\newline
+CE 1/02/2022/Ur \\hfill Data pomiarów: \\newline
 Wykonawca pomiarów \\hfill \\quad \\newline
 Miejsce przeprowadzenia pomiarów: \\hfill
         '''
 
     def _foot(self):
-        return 'ElektroInf \\hfill CE 1/09/2021/Ur\\quad\\thepage/\\pageref{LastPage}'
+        return 'ElektroInf \\hfill CE 1/02/2022/Ur\\quad\\thepage/\\pageref{LastPage}'
 
     def render(self, ctx: Ctx):
         ctx.usepackage('lastpage') \
@@ -277,13 +284,13 @@ class MeasureTitlePage(LatexObject):
         ctx.cmd('thispagestyle', 'FancyTitle') \
             .put(Content(
             Center(
-                '\\includesvg[width=0.4\\columnwidth]{../img/measure-icon.svg}'
+                '\\includesvg[width=0.4\\columnwidth]{img/measure-icon.svg}'
             ),
             Center(
                 HLine(), 'ElektroInf'
             ),
             Center('\\Huge\\textbf{{Protokół z pomiarów ochronnych}}'),
-            Center('\\Large CE 1/09/2021/Ur'),
+            Center('\\Large CE 1/02/2022/Ur'),
         )).put(
             '\\vfill\\flushleft'
         ).put(
@@ -303,12 +310,12 @@ class MeasureDescriptionPage(LatexObject):
         ctx.cmd('pagebreak').cmd('thispagestyle', 'FancyTitle') \
             .put(Content(
             '\\hfill',
-            '\\includesvg[width=0.15\\columnwidth]{../img/measure-icon.svg}',
+            '\\includesvg[width=0.15\\columnwidth]{img/measure-icon.svg}',
             Box((Bold('Wykonawca pomiarów:'), '.', '.', '.', '.',), width=.4),
         )).put('\\quad\\\\\\quad\\\\\\quad\\\\\\quad\\\\').put(
             Center('\\Large Protokół z pomiarów ochronnych')
         ).put(
-            Center(Bold('\\Large CE 1/09/2021/Ur'))
+            Center(Bold('\\Large CE 1/02/2022/Ur'))
         ).put('\\vfill').put(TextBox(
             (Bold('Zleceniodawca:'), '.', '.', '.', '.',)
         )).put(TextBox(
