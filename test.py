@@ -1,6 +1,6 @@
 from pysqlite3 import connect
 
-from latex_utils import Document, Ctx, Center, Content, MeasurePageSetup, MeasureTitlePage
+from latex_utils import Document, Ctx, Center, Content, MeasurePageSetup, MeasureTitlePage, MeasureDescriptionPage
 from meas_render import format_measure_table
 from measurements import TestRCD, PetlaZwarciaTNS
 
@@ -12,12 +12,13 @@ Document(
         MeasurePageSetup(),
         '\\captionsetup[table]{labelformat=empty}'
     ),
-    packages=('longtable', 'caption', 'multirow', 'mathtools'),
+    packages=('longtable', 'caption', 'multirow', 'mathtools', 'svg'),
     date='',
     title='pomiary',
     author='pietrek',
     body=Content(
         MeasureTitlePage(),
+        MeasureDescriptionPage(),
         Center(
             format_measure_table(cur, PetlaZwarciaTNS(), (3, 6)),
             format_measure_table(cur, TestRCD(), (3, 6)),

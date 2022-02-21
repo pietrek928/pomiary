@@ -1,9 +1,9 @@
 from contextlib import contextmanager
-from typing import Union, Iterable, Tuple, Optional
+from typing import Union, Iterable, Tuple, Optional, List
 
 from pydantic import BaseModel
 
-ContentItem = Union[str, 'LatexObject']
+ContentItem = Union[str, 'LatexObject', Tuple]
 
 
 class Ctx:
@@ -14,6 +14,9 @@ class Ctx:
     def put(self, v: ContentItem):
         if isinstance(v, LatexObject):
             v.render(self)
+        elif isinstance(v, (List, Tuple)):
+            for item in v:
+                self.put(item).break_()
         else:
             self._print(v)
         return self
@@ -66,6 +69,7 @@ class Document(LatexObject):
     def render(self, ctx: Ctx):
         ctx.cmd('documentclass', self.document_class)
         ctx.put('''
+        \\usepackage[a4paper]{geometry}
         \\usepackage[T1]{fontenc}
         \\usepackage{polski}
         \\usepackage[utf8]{inputenc}
@@ -104,8 +108,8 @@ class HLine(LatexObject):
 class Content(LatexObject):
     items: Iterable[ContentItem] = ()
 
-    def __init__(self, *items):
-        super().__init__(items=tuple(items))
+    def __init__(self, *items, **kwargs):
+        super().__init__(items=tuple(items), **kwargs)
 
     def render(self, ctx: Ctx):
         for item in self.items:
@@ -116,6 +120,18 @@ class Center(Content):
     def render(self, ctx: Ctx):
         with ctx.begin('center'):
             super().render(ctx)
+
+
+class DotList(LatexObject):
+    items: Iterable[ContentItem] = ()
+
+    def __init__(self, *items):
+        super().__init__(items=tuple(items))
+
+    def render(self, ctx: Ctx):
+        with ctx.begin('itemize'):
+            for item in self.items:
+                ctx.cmd('item').put(item)
 
 
 class ZeroSkipHeader(LatexObject):
@@ -133,6 +149,15 @@ class ZeroSkipHeader(LatexObject):
 ''')
 
 
+class Box(Content):
+    width: float = 1.
+
+    def render(self, ctx: Ctx):
+        ctx.put(f'\\parbox{{{self.width}\\textwidth}}{{')
+        super().render(ctx)
+        ctx.put('}')
+
+
 class TextBox(Content):
     def render(self, ctx: Ctx):
         ctx.put('\\fbox{\\parbox{\\textwidth}{')
@@ -140,14 +165,24 @@ class TextBox(Content):
         ctx.put('}}')
 
 
-class Math(LatexObject):
-    t: ContentItem
+class ItemContainer(LatexObject):
+    i: ContentItem
 
-    def __init__(self, t: ContentItem):
-        super().__init__(t=t)
+    def __init__(self, i: ContentItem):
+        super().__init__(i=i)
 
     def render(self, ctx: Ctx):
-        ctx.put(f'${{{_render_to_str(self.t)}}}$')
+        ctx.put(self.i)
+
+
+class Math(ItemContainer):
+    def render(self, ctx: Ctx):
+        ctx.put(f'${{{_render_to_str(self.i)}}}$')
+
+
+class Bold(ItemContainer):
+    def render(self, ctx: Ctx):
+        ctx.put(f'\\textbf{{{_render_to_str(self.i)}}}')
 
 
 class MultiLine(LatexObject):
@@ -233,30 +268,58 @@ Miejsce przeprowadzenia pomiarów: \\hfill
             .cmd('pagestyle', 'fancy') \
             .cmd('fancyhf', '') \
             .cmd('fancyhead[CO]', self._head()) \
-            .cmd('rfoot', self._foot())
+            .cmd('rfoot', self._foot()) \
+            .put('\\fancypagestyle{FancyTitle}{\\renewcommand{\\headrulewidth}{0pt}\\fancyhead{}}')
 
 
 class MeasureTitlePage(LatexObject):
     def render(self, ctx: Ctx):
-        with ctx.begin('titlepage'):
-            ctx.put(Content(
-                Center(
-                    '\\includegraphics[width=0.7\\columnwidth]{example-image-duck}'
-                ),
-                Center(
-                    HLine(), 'ElektroInf'
-                ),
-                Center('\\Huge\\textbf{{Protokół z pomiarów ochronnych}}'),
-                Center('\\Large CE 1/09/2021/Ur'),
-            )).put(
-                '\\vfill\\flushleft'
-            ).put(
-                HLine()
-            ).put('Miejsce przeprowadzenia pomiarów:').break_() \
-                .put('.').break_() \
-                .put('Data pomiarów:').break_() \
-                .put('.').break_() \
-                .put('Wykonawca pomiarów:').break_() \
-                .put('.').break_() \
-                .put('Pomiarowcy:').break_() \
-                .put('.').break_()
+        ctx.cmd('thispagestyle', 'FancyTitle') \
+            .put(Content(
+            Center(
+                '\\includesvg[width=0.4\\columnwidth]{../img/measure-icon.svg}'
+            ),
+            Center(
+                HLine(), 'ElektroInf'
+            ),
+            Center('\\Huge\\textbf{{Protokół z pomiarów ochronnych}}'),
+            Center('\\Large CE 1/09/2021/Ur'),
+        )).put(
+            '\\vfill\\flushleft'
+        ).put(
+            HLine()
+        ).put('Miejsce przeprowadzenia pomiarów:').break_() \
+            .put('.').break_() \
+            .put('Data pomiarów:').break_() \
+            .put('.').break_() \
+            .put('Wykonawca pomiarów:').break_() \
+            .put('.').break_() \
+            .put('Pomiarowcy:').break_() \
+            .put('.').break_()
+
+
+class MeasureDescriptionPage(LatexObject):
+    def render(self, ctx: Ctx):
+        ctx.cmd('pagebreak').cmd('thispagestyle', 'FancyTitle') \
+            .put(Content(
+            '\\hfill',
+            '\\includesvg[width=0.15\\columnwidth]{../img/measure-icon.svg}',
+            Box((Bold('Wykonawca pomiarów:'), '.', '.', '.', '.',), width=.4),
+        )).put('\\quad\\\\\\quad\\\\\\quad\\\\\\quad\\\\').put(
+            Center('\\Large Protokół z pomiarów ochronnych')
+        ).put(
+            Center(Bold('\\Large CE 1/09/2021/Ur'))
+        ).put('\\vfill').put(TextBox(
+            (Bold('Zleceniodawca:'), '.', '.', '.', '.',)
+        )).put(TextBox(
+            (Bold('Miejsce przeprowadzenia pomiarów:'), '.', '.', '.', '.',)
+        )).put(TextBox(
+            Box((
+                Content(Bold('Rodzaj pomiarów:'), '.'), Content(Bold('Data pomiarów:'), '.'),
+                Content(Bold('Instalacja:'), '.'),
+            ), width=.5),
+            Box((Content(Bold('Pogoda:'), '.'), Content(Bold('Data następnych pomiarów:'), '.'), '\\quad'), width=.5)
+            # Bold('Rodzaj pomiarów:'), '.', '\\hfill', Bold('Pogoda:'), '.'
+        )).put(TextBox(
+            (Bold('Orzeczenie:'), '.', '.', '.', '.',)
+        )).cmd('pagebreak')
