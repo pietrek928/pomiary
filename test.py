@@ -1,7 +1,7 @@
 from pysqlite3 import connect
 
 from latex_utils import Document, Ctx, Center, Content, MeasurePageSetup, MeasureTitlePage, MeasureDescriptionPage, \
-    IncludeFile
+    IncludeFile, Attachment
 from meas_render import format_measure_table
 from measurements import TestRCD, PetlaZwarciaTNS
 
@@ -10,7 +10,7 @@ cur = conn.cursor()
 
 Document(
     header=Content(
-        MeasurePageSetup(),
+        MeasurePageSetup(firma='ElektroInf'),
         '\\captionsetup[table]{labelformat=empty}'
     ),
     packages=('longtable', 'caption', 'multirow', 'mathtools', 'svg'),
@@ -18,13 +18,14 @@ Document(
     title='pomiary',
     author='pietrek',
     body=Content(
-        MeasureTitlePage(),
+        MeasureTitlePage(firma='ElektroInf'),
         MeasureDescriptionPage(),
         Center(
             format_measure_table(cur, PetlaZwarciaTNS(), (3, 6)),
             format_measure_table(cur, TestRCD(), (3, 6)),
         ),
         IncludeFile(fname='akty-prawne.tex'),
+        Attachment('aaaaaaaaaaaaaaa', name='ZZZZZałącznik'),
     )
 ).render(Ctx())
 

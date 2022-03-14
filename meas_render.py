@@ -12,6 +12,9 @@ class MeasureDescriptor(BaseModel):
     title: ContentItem = 'Pomiar'
     measure_ids: Tuple[str, ...] = ()
 
+    def get_description(self) -> ContentItem:
+        raise NotImplementedError('get description implemented')
+
     def get_columns(self) -> Tuple[ContentItem, ...]:
         raise NotImplementedError('get columns not implemented')
 

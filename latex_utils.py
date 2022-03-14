@@ -15,8 +15,10 @@ class Ctx:
         if isinstance(v, LatexObject):
             v.render(self)
         elif isinstance(v, (List, Tuple)):
-            for item in v:
-                self.put(item).break_()
+            if v:
+                for item in v[:-1]:
+                    self.put(item).break_()
+                self.put(v[-1])
         else:
             self._print(v)
         return self
@@ -109,7 +111,7 @@ class IncludeFile(LatexObject):
     fname: str
 
     def render(self, ctx: Ctx):
-        ctx.cmd('include', self.fname)
+        ctx.cmd('include', self.fname).cmd('pagebreak')
 
 
 class Content(LatexObject):
@@ -257,29 +259,54 @@ class LongTable(LatexObject):
                 self._render_row(ctx, row)
 
 
+class Attachment(Content):
+    name: ContentItem = '.'
+
+    def render(self, ctx: Ctx):
+        ctx.put('Załącznik: ').put(self.name).put('\\hfill').put(HLine())
+        super().render(ctx)
+        ctx.cmd('pagebreak')
+
+
 class MeasurePageSetup(LatexObject):
+    ce_data: str = '02/2022'
+
+    firma: ContentItem = '.'
+    data_pomiarow: ContentItem = '.'
+    wykonawca: ContentItem = '.'
+    miejsce: ContentItem = '.'
+
     def _head(self):
-        return '''
-\\footnotesize
-CE 1/02/2022/Ur \\hfill Data pomiarów: \\newline
-Wykonawca pomiarów \\hfill \\quad \\newline
-Miejsce przeprowadzenia pomiarów: \\hfill
-        '''
+        return Content(
+            '\\footnotesize ',
+            f'CE 1/{self.ce_data}/Ur \\hfill ',
+            'Data pomiarów: ', self.data_pomiarow, ' \\newline ',
+            'Wykonawca pomiarów: ', self.wykonawca, ' \\hfill\\newline ',
+            'Miejsce przeprowadzenia pomiarów: ', self.miejsce, '\\hfill ',
+        )
 
     def _foot(self):
-        return 'ElektroInf \\hfill CE 1/02/2022/Ur\\quad\\thepage/\\pageref{LastPage}'
+        return Content(self.firma, f'\\hfill CE 1/{self.ce_data}/Ur\\quad\\thepage/\\pageref{{LastPage}}')
 
     def render(self, ctx: Ctx):
         ctx.usepackage('lastpage') \
             .usepackage('fancyhdr') \
             .cmd('pagestyle', 'fancy') \
             .cmd('fancyhf', '') \
-            .cmd('fancyhead[CO]', self._head()) \
-            .cmd('rfoot', self._foot()) \
+            .cmd('fancyhead[CO]', _render_to_str(self._head())) \
+            .cmd('rfoot', _render_to_str(self._foot())) \
             .put('\\fancypagestyle{FancyTitle}{\\renewcommand{\\headrulewidth}{0pt}\\fancyhead{}}')
 
 
 class MeasureTitlePage(LatexObject):
+    ce_data: str = '02/2022'
+
+    firma: ContentItem = '.'
+    data_pomiarow: ContentItem = '.'
+    wykonawca: ContentItem = '.'
+    miejsce: ContentItem = '.'
+    pomiarowcy: ContentItem = '.'
+
     def render(self, ctx: Ctx):
         ctx.cmd('thispagestyle', 'FancyTitle') \
             .put(Content(
@@ -287,46 +314,62 @@ class MeasureTitlePage(LatexObject):
                 '\\includesvg[width=0.4\\columnwidth]{img/measure-icon.svg}'
             ),
             Center(
-                HLine(), 'ElektroInf'
+                HLine(), self.firma
             ),
-            Center('\\Huge\\textbf{{Protokół z pomiarów ochronnych}}'),
-            Center('\\Large CE 1/02/2022/Ur'),
+            Center('\\Huge\\textbf{Protokół z pomiarów ochronnych}'),
+            Center(f'\\Large CE 1/{self.ce_data}/Ur'),
         )).put(
             '\\vfill\\flushleft'
         ).put(
             HLine()
         ).put('Miejsce przeprowadzenia pomiarów:').break_() \
-            .put('.').break_() \
+            .put(self.miejsce).break_() \
             .put('Data pomiarów:').break_() \
-            .put('.').break_() \
+            .put(self.data_pomiarow).break_() \
             .put('Wykonawca pomiarów:').break_() \
-            .put('.').break_() \
+            .put(self.wykonawca).break_() \
             .put('Pomiarowcy:').break_() \
-            .put('.').break_()
+            .put(self.pomiarowcy).break_()
 
 
 class MeasureDescriptionPage(LatexObject):
+    ce_data: str = '02/2022'
+    wykonawca: ContentItem = ('.', '.', '.', '.')
+    zleceniodawca: ContentItem = ('.', '.', '.', '.')
+    miejsce: ContentItem = ('.', '.', '.', '.')
+    orzeczenie: ContentItem = ('.', '.', '.', '.')
+
+    rodzaj_pomiarow: ContentItem = '.'
+    data_pomiarow: ContentItem = '.'
+    instalacja: ContentItem = '.'
+    pogoda: ContentItem = '.'
+    data_nastepnych_pomiarow: ContentItem = '.'
+
     def render(self, ctx: Ctx):
         ctx.cmd('pagebreak').cmd('thispagestyle', 'FancyTitle') \
             .put(Content(
             '\\hfill',
             '\\includesvg[width=0.15\\columnwidth]{img/measure-icon.svg}',
-            Box((Bold('Wykonawca pomiarów:'), '.', '.', '.', '.',), width=.4),
+            Box((Bold('Wykonawca pomiarów:'), self.wykonawca), width=.4),
         )).put('\\quad\\\\\\quad\\\\\\quad\\\\\\quad\\\\').put(
             Center('\\Large Protokół z pomiarów ochronnych')
         ).put(
-            Center(Bold('\\Large CE 1/02/2022/Ur'))
+            Center(Bold(f'\\Large CE 1/{self.ce_data}/Ur'))
         ).put('\\vfill').put(TextBox(
-            (Bold('Zleceniodawca:'), '.', '.', '.', '.',)
+            (Bold('Zleceniodawca:'), self.zleceniodawca)
         )).put(TextBox(
-            (Bold('Miejsce przeprowadzenia pomiarów:'), '.', '.', '.', '.',)
+            (Bold('Miejsce przeprowadzenia pomiarów:'), self.miejsce)
         )).put(TextBox(
             Box((
-                Content(Bold('Rodzaj pomiarów:'), '.'), Content(Bold('Data pomiarów:'), '.'),
-                Content(Bold('Instalacja:'), '.'),
+                Content(Bold('Rodzaj pomiarów:'), self.rodzaj_pomiarow),
+                Content(Bold('Data pomiarów:'), self.data_pomiarow),
+                Content(Bold('Instalacja:'), self.instalacja),
             ), width=.5),
-            Box((Content(Bold('Pogoda:'), '.'), Content(Bold('Data następnych pomiarów:'), '.'), '\\quad'), width=.5)
-            # Bold('Rodzaj pomiarów:'), '.', '\\hfill', Bold('Pogoda:'), '.'
+            Box(
+                (Content(Bold('Pogoda:'), self.pogoda),
+                 Content(Bold('Data następnych pomiarów:'), self.data_nastepnych_pomiarow), '\\quad'),
+                width=.5
+            )
         )).put(TextBox(
-            (Bold('Orzeczenie:'), '.', '.', '.', '.',)
+            (Bold('Orzeczenie:'), self.orzeczenie)
         )).cmd('pagebreak')
