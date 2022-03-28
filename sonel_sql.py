@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Type, TypeVar, Generator
+from typing import Type, TypeVar, Generator, Tuple
 
 from pydantic import BaseModel
 from pysqlite3 import Cursor
@@ -63,3 +63,20 @@ def query_models(
 
     for row in cur.execute(query):
         yield model(**dict(zip(field_names, row)))
+
+
+def query_tree_children(cur: Cursor, parent_ids: Tuple[int, ...]) -> Generator[Tree, None, None]:
+    parent_ids_list = ", ".join(map(str, parent_ids))
+    return query_models(
+        cur, Tree, query_filter=f'idParentNode IN ({parent_ids_list})'
+    )
+
+
+def print_node_tree(cur: Cursor, parent_id: int, level: int = 0):
+    nodes = sorted(
+        query_tree_children(cur, (parent_id,)),
+        key=lambda n: n.name or n.shortName
+    )
+    for n in nodes:
+        print((' ' * level * 4) + f'{n.name or n.shortName}   id={n.idNode}')
+        print_node_tree(cur, n.idNode, level + 1)

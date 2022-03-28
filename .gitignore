@@ -2,5 +2,7 @@ test.tex
 svg-inkscape
 out
 sqlite
+reports
 .idea
 **/__pycache__
+**/*.jpg

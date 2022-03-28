@@ -27,9 +27,15 @@ class Ctx:
         self._print('\\\\')
         return self
 
-    def cmd(self, p, *args):
-        args = ''.join(f'{{{a}}}' for a in args)
-        self._print(f'\\{p}{args}')  # TODO: escape ?
+    def cmd(self, p, *args, **params):
+        c = f'\\{p}'
+        if params:
+            params = ', '.join(
+                f'{k}={v}' for k, v in params.items()
+            )
+            c += f'[{params}]'
+        c += ''.join(f'{{{a}}}' for a in args)
+        self._print(c)  # TODO: escape ?
         return self
 
     def usepackage(self, p):
@@ -259,6 +265,18 @@ class LongTable(LatexObject):
                 self._render_row(ctx, row)
 
 
+class Images(LatexObject):
+    images: Tuple[str, ...]
+    scale: float = 1.
+
+    def __init__(self, images, **kwargs):
+        super().__init__(images=images, **kwargs)
+
+    def render(self, ctx: Ctx):
+        for im in self.images:
+            ctx.cmd('includegraphics', im, scale=self.scale)
+
+
 class Attachment(Content):
     name: ContentItem = '.'
 
@@ -280,8 +298,8 @@ class MeasurePageSetup(LatexObject):
         return Content(
             '\\footnotesize ',
             f'CE 1/{self.ce_data}/Ur \\hfill ',
-            'Data pomiarów: ', self.data_pomiarow, ' \\newline ',
-            'Wykonawca pomiarów: ', self.wykonawca, ' \\hfill\\newline ',
+            'Data pomiarów: ', self.data_pomiarow, '\\newline ',
+            'Wykonawca pomiarów: ', self.wykonawca, '\\hfill\\quad\\newline ',
             'Miejsce przeprowadzenia pomiarów: ', self.miejsce, '\\hfill ',
         )
 

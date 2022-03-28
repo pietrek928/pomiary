@@ -1,8 +1,8 @@
 from collections import defaultdict
-from sqlite3 import Cursor
-from typing import Tuple, Dict
+from typing import Tuple, Dict, Any
 
 from pydantic import BaseModel
+from pysqlite3 import Cursor
 
 from latex_utils import LongTable, ContentItem
 from sonel_sql import query_models, Tree, Measurement, MeasurementValue
@@ -18,18 +18,18 @@ class MeasureDescriptor(BaseModel):
     def get_columns(self) -> Tuple[ContentItem, ...]:
         raise NotImplementedError('get columns not implemented')
 
-    def format_row(self, data: Dict[str, Dict[str, str]]) -> Tuple[ContentItem, ...]:
+    def compute_row(self, data: Dict[str, Dict[str, str]]) -> Dict[str, Any]:
+        raise NotImplementedError('compute row not implemented')
+
+    def format_row(self, row: Dict[str, Any]) -> Tuple[ContentItem, ...]:
         raise NotImplementedError('get rows not implemented')
 
 
-def _get_measure_data(
-        cur: Cursor, place_ids: Tuple[int, ...], measure_types: Tuple[str, ...]
+def get_measure_data(
+        cur: Cursor, places: Tuple[Tree, ...], measure_types: Tuple[str, ...]
 ):
-    place_ids_list = ", ".join(map(str, place_ids))
+    place_ids_list = ", ".join(map(str, (place.idNode for place in places)))
     measure_types_list = ", ".join(f'"{m}"' for m in measure_types)
-    places = query_models(
-        cur, Tree, query_filter=f'idNode IN ({place_ids_list})'
-    )
     places_by_ids = {}
     for place in places:
         places_by_ids[place.idNode] = place
@@ -58,20 +58,18 @@ def _get_measure_data(
         all_data[meas.idNode][meas.typeMeasurement][v.property] = v.value
 
     return {
-        place_id: {
+        places_by_ids[place_id].name or places_by_ids[place_id].idNode: {
             meas_type: meas_data for meas_type, meas_data in place_data.items()
         } for place_id, place_data in all_data.items()
     }
 
 
 def _generate_measurements_rows(measure_descr: MeasureDescriptor, measure_data):
-    for place_id, place_data in sorted(measure_data.items()):
-        place_name = next(iter(place_data.values()))['place_name']
+    for place_name, place_data in sorted(measure_data.items()):
         yield (place_name,) + measure_descr.format_row(place_data)
 
 
-def format_measure_table(cur: Cursor, measure_descr: MeasureDescriptor, place_ids: Tuple[int, ...]):
-    meas_data = _get_measure_data(cur, place_ids, measure_descr.measure_ids)
+def format_measure_table(measure_descr: MeasureDescriptor, meas_data):
     return LongTable(
         caption=measure_descr.title,
         columns=('Badany punkt',) + measure_descr.get_columns(),
