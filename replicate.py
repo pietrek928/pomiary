@@ -1,5 +1,5 @@
 from re import sub
-from typing import Iterable
+from typing import Iterable, Mapping
 
 from pysqlite3 import Cursor
 
@@ -21,7 +21,11 @@ def fill_pattern(pattern, nums):
     )
 
 
-def fill_for_node(cur: Cursor, node_id: int, meas: MeasureDescriptor, names: Iterable[str] = ()):
+def fill_for_node(
+        cur: Cursor, node_id: int, meas: MeasureDescriptor,
+        names: Iterable[str] = (), override: Mapping = ()
+):
+    override = dict(override)
     children = tuple(query_tree_children(cur, (node_id,)))
 
     db_data = get_measure_data(cur, children, meas.measure_ids)
@@ -33,7 +37,7 @@ def fill_for_node(cur: Cursor, node_id: int, meas: MeasureDescriptor, names: Ite
     samplers = get_samplers_for_items(extracted_data.values())
 
     return {
-        place_name: sample_vals(
+        place_name: {**sample_vals(
             samplers, extracted_data.get(place_name) or {}
-        ) for place_name in set(names).union(db_data.keys())
+        ), **override} for place_name in set(names).union(db_data.keys())
     }

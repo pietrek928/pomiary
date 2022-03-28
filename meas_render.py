@@ -4,7 +4,7 @@ from typing import Tuple, Dict, Any
 from pydantic import BaseModel
 from pysqlite3 import Cursor
 
-from latex_utils import LongTable, ContentItem
+from latex_utils import LongTable, ContentItem, Bold
 from sonel_sql import query_models, Tree, Measurement, MeasurementValue
 
 
@@ -75,3 +75,7 @@ def format_measure_table(measure_descr: MeasureDescriptor, meas_data):
         columns=('Badany punkt',) + measure_descr.get_columns(),
         rows=_generate_measurements_rows(measure_descr, meas_data),
     )
+
+
+def format_legend(measure_descr: MeasureDescriptor):
+    return Bold(measure_descr.title), measure_descr.get_description(), '\\quad', ''

@@ -24,7 +24,7 @@ class PetlaZwarciaTNS(MeasureDescriptor):
             'Typ: charakterystyka bezpiecznika',
             Content(Math('I_n [A]'), ': prąd nominalny bezpiecznika'),
             Content(Math('I_a [A]'), ': prąd powodujący wyzwolenie bezpiecznika'),
-            Content(Math('Z_s [\\Omega]'), ': zmierzona wartość impedancji pętli zwarcia: ', Math('Z_a = U_o / I_a')),
+            Content(Math('Z_s [\\Omega]'), ': zmierzona wartość impedancji pętli zwarcia: '),
             Content(Math('Z_a [\\Omega]'), ': wymagana wartość impedancji pętli zwarcia: ', Math('Z_a = U_o / I_a')),
             Content(Math('I_k [A]'), ': prąd zwarcia wyliczony: ', Math('I_k = U_o / Z_s')),
             Content('Ocena: ocena pomiaru - pozytywna gdy ', Math('Z_s <= Z_a')),
@@ -103,7 +103,6 @@ class TestRCD(MeasureDescriptor):
         )
 
     def compute_row(self, data: Dict[str, Dict[str, str]]) -> Dict[str, Any]:
-        print('!!!!!!!!!!!!!!!!!!!!!', file=stderr)
         RCDAuto = data['RCDAuto']
         results = self._collect_results(RCDAuto)
 
@@ -144,13 +143,13 @@ class TestRCDta(MeasureDescriptor):
             # 'Wyłącznik RCD: nazwa elementu zabezpieczającego obwód',
             'Typ: charakterystyka zabezpieczenia',
             Content(Math('I_{\\Delta n} [mA]'), 'różnicowy prąd wyłączający'),
-            Content(Math('ta [ms]'), 'wymagany czas wyłączenia RCD'),
-            Content(Math('t_{RCD} [ms]'), 'wymagany czas wyłączenia RCD'),
-            Content(Math('U_d [V]'), 'napięcie dotykowe zmierzone'),
+            Content(Math('t_{RCD} [ms]'), 'zmierzony czas wyłączenia RCD'),
+            Content(Math('t_a [ms]'), 'wymagany czas wyłączenia RCD'),
+            Content(Math('U_b [V]'), 'napięcie dotykowe zmierzone'),
             Content(Math('U_I [V]'), 'dopuszczalne napięcie dotykowe bezpiecznie'),
             Content(
                 'Ocena: dopuszczalne napięcie dotykowe bezpiecznie ',
-                Math('U_d <= U_I'), Math('t_{RCD} <= t_A'),
+                Math('U_d <= U_I'), Math('t_{RCD} <= t_{A}'),
             ),
         )
 
@@ -159,8 +158,8 @@ class TestRCDta(MeasureDescriptor):
             # MultiLine('Wyłącznik', 'RCD'),
             'Typ',
             MultiLine(Math('I_{\\Delta n}'), '[mA]'),
-            MultiLine(Math('t_a'), '[ms]'), MultiLine(Math('t_{RCD}'), '[ms]'),
-            MultiLine(Math('U_d'), '[V]'), MultiLine(Math('U_I'), '[V]'),
+            MultiLine(Math('t_{a}'), '[ms]'), MultiLine(Math('t_{RCD}'), '[ms]'),
+            MultiLine(Math('U_{b}'), '[V]'), MultiLine(Math('U_I'), '[V]'),
             'Ocena'
         )
 
@@ -172,7 +171,7 @@ class TestRCDta(MeasureDescriptor):
             ta=40e-3,
             trcd=float(RCDta['t_a.rawValue']),
             UI=float(RCDta['ul.rawValue']),
-            UD=float(RCDta['ub.rawValue']),
+            UB=float(RCDta['ub.rawValue']),
             RE=float(RCDta['re.rawValue']),
         )
 
@@ -182,8 +181,8 @@ class TestRCDta(MeasureDescriptor):
             '[AC]',
             format_number(row['In_mA'], 0),
             format_number(row['ta'] * 1e3, 0), format_number(row['trcd'] * 1e3, 0),
-            format_number(row['UD'], 1), format_number(row['UI'], 0),
-            'Pozytywna' if (row['trcd'] <= row['ta'] and row['UD'] <= row['UI']) else 'Negatywna',
+            format_number(row['UB'], 1), format_number(row['UI'], 0),
+            'Pozytywna' if (row['trcd'] <= row['ta'] and row['UB'] <= row['UI']) else 'Negatywna',
         )
 
 

@@ -3,6 +3,8 @@ from typing import Union, Iterable, Tuple, Optional, List
 
 from pydantic import BaseModel
 
+from sonel_sql import Tree
+
 ContentItem = Union[str, 'LatexObject', Tuple]
 
 
@@ -340,14 +342,14 @@ class MeasureTitlePage(LatexObject):
             '\\vfill\\flushleft'
         ).put(
             HLine()
-        ).put('Miejsce przeprowadzenia pomiarów:').break_() \
-            .put(self.miejsce).break_() \
-            .put('Data pomiarów:').break_() \
-            .put(self.data_pomiarow).break_() \
-            .put('Wykonawca pomiarów:').break_() \
-            .put(self.wykonawca).break_() \
-            .put('Pomiarowcy:').break_() \
-            .put(self.pomiarowcy).break_()
+        ).put(Bold('Miejsce przeprowadzenia pomiarów:')).break_() \
+            .put(self.miejsce).break_().put('\\quad').break_() \
+            .put(Bold('Data pomiarów:')).break_() \
+            .put(self.data_pomiarow).break_().put('\\quad').break_() \
+            .put(Bold('Wykonawca pomiarów:')).break_() \
+            .put(self.wykonawca).break_().put('\\quad').break_() \
+            .put(Bold('Pomiarowcy:')).break_() \
+            .put(self.pomiarowcy)
 
 
 class MeasureDescriptionPage(LatexObject):
@@ -364,7 +366,8 @@ class MeasureDescriptionPage(LatexObject):
     data_nastepnych_pomiarow: ContentItem = '.'
 
     def render(self, ctx: Ctx):
-        ctx.cmd('pagebreak').cmd('thispagestyle', 'FancyTitle') \
+        ctx.cmd('newpage') \
+            .cmd('thispagestyle', 'FancyTitle') \
             .put(Content(
             '\\hfill',
             '\\includesvg[width=0.15\\columnwidth]{img/measure-icon.svg}',
@@ -390,4 +393,14 @@ class MeasureDescriptionPage(LatexObject):
             )
         )).put(TextBox(
             (Bold('Orzeczenie:'), self.orzeczenie)
-        )).cmd('pagebreak')
+        ))
+
+
+class MeasurePlaceBlock(Center):
+    place: Tree
+
+    def render(self, ctx: Ctx):
+        ctx.cmd('newpage') \
+            .put(Bold(self.place.name or self.place.shortName)) \
+            .break_()
+        super().render(ctx)

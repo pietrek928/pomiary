@@ -65,6 +65,12 @@ def query_models(
         yield model(**dict(zip(field_names, row)))
 
 
+def query_tree_node(cur: Cursor, node_id: int):
+    return tuple(query_models(
+        cur, Tree, query_filter=f'idNode = {node_id}'
+    ))[0]
+
+
 def query_tree_children(cur: Cursor, parent_ids: Tuple[int, ...]) -> Generator[Tree, None, None]:
     parent_ids_list = ", ".join(map(str, parent_ids))
     return query_models(
