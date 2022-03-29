@@ -50,17 +50,18 @@ class PetlaZwarciaTNS(MeasureDescriptor):
             In=float(zln['In'][:-2]),
             Ia=float(zln['ia.rawValue']),
             Zs=float(zln['zOhm.rawValue']),
-            Ik=float(zln['ikA.rawValue']),
+            # Ik=float(zln['ikA.rawValue']),
         )
 
     def format_row(self, row: Dict[str, Any]) -> Tuple[ContentItem, ...]:
         Za = 230. / row['Ia']
+        Ik = 230. / row['Zs']
         return (
             # row['fuse_model'],
             row['fuse_characteristics'],
             format_number(row['In'], 2), format_number(row['Ia'], 2),
             format_number(row['Zs'], 2), format_number(Za, 2),
-            format_number(row['Ik'], 2), 'Pozytywna' if row['Zs'] <= Za else 'Negatywna'
+            format_number(Ik, 2), 'Pozytywna' if row['Zs'] <= Za else 'Negatywna'
         )
 
 

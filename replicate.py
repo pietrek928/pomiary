@@ -23,10 +23,15 @@ def fill_pattern(pattern, nums):
 
 def fill_for_node(
         cur: Cursor, node_id: int, meas: MeasureDescriptor,
-        names: Iterable[str] = (), override: Mapping = ()
+        names: Iterable[str] = (), override: Mapping = (),
+        ignore: Iterable[int] = ()
 ):
     override = dict(override)
-    children = tuple(query_tree_children(cur, (node_id,)))
+    ignore = set(ignore)
+    children = tuple(
+        c for c in query_tree_children(cur, (node_id,))
+        if c.idNode not in ignore
+    )
 
     db_data = get_measure_data(cur, children, meas.measure_ids)
     extracted_data = {
