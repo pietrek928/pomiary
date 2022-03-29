@@ -293,7 +293,7 @@ class MeasurePageSetup(LatexObject):
 
     firma: ContentItem = '.'
     data_pomiarow: ContentItem = '.'
-    wykonawca: ContentItem = '.'
+    pomiarowcy: ContentItem = '.'
     miejsce: ContentItem = '.'
 
     def _head(self):
@@ -301,7 +301,7 @@ class MeasurePageSetup(LatexObject):
             '\\footnotesize ',
             f'CE 1/{self.ce_data}/Ur \\hfill ',
             'Data pomiarów: ', self.data_pomiarow, '\\newline ',
-            'Wykonawca pomiarów: ', self.wykonawca, '\\hfill\\quad\\newline ',
+            'Pomiarowcy: ', self.pomiarowcy, '\\hfill\\quad\\newline ',
             'Miejsce przeprowadzenia pomiarów: ', self.miejsce, '\\hfill ',
         )
 
