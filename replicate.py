@@ -1,4 +1,6 @@
-from re import sub
+from math import log10, ceil
+from re import sub, findall, split
+from sys import stderr
 from typing import Iterable, Mapping
 
 from pysqlite3 import Cursor
@@ -16,7 +18,7 @@ def name_to_pattern(name):
 
 def fill_pattern(pattern, nums):
     return tuple(
-        pattern.replace('XXX', str(n))
+        pattern.replace('XXX', str(n).rjust(int(ceil(log10(max(nums)))), ' '))
         for n in nums
     )
 

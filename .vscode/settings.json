@@ -1,0 +1,7 @@
+{
+    "clangd.fallbackFlags": [
+        "-std=c++17",
+        "-I/usr/include/python3.10",
+        "-DUSE_PYTHON"
+    ],
+}

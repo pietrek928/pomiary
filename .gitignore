@@ -3,6 +3,10 @@ svg-inkscape
 out
 sqlite
 reports
+panele-reg
 .idea
 **/__pycache__
 **/*.jpg
+**/*.so
+**/*.egg-info
+**/build

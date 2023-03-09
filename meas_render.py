@@ -1,4 +1,5 @@
 from collections import defaultdict
+from re import findall, split
 from typing import Tuple, Dict, Any
 
 from pydantic import BaseModel
@@ -64,9 +65,21 @@ def get_measure_data(
     }
 
 
+def _sort_key(name):
+    nums = findall(r'\d+', name) + ['0']
+    parts = split(r'\d+', name)
+    k = []
+    for n, p in zip(nums, parts):
+        p = p.strip()
+        if p:
+            k.append(p)
+        k.append(str(int(n)).rjust(10, '0'))
+    return tuple(k)
+
+
 def _generate_measurements_rows(measure_descr: MeasureDescriptor, measure_data):
-    for place_name, place_data in sorted(measure_data.items()):
-        yield (place_name,) + measure_descr.format_row(place_data)
+    for place_name in sorted(measure_data, key=_sort_key):
+        yield (place_name,) + measure_descr.format_row(measure_data[place_name])
 
 
 def format_measure_table(measure_descr: MeasureDescriptor, meas_data):

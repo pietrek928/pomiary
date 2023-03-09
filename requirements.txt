@@ -1,2 +1,4 @@
 pydantic
 pysqlite3
+numpy
+matplotlib

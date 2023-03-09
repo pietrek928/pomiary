@@ -2,7 +2,7 @@ from collections import defaultdict
 from sys import stderr
 from typing import Tuple, Dict, Any
 
-from latex_utils import ContentItem, Math, MultiLine, Content
+from latex_utils import ContentItem, Math, MultiLine, Content, Color
 from meas_render import MeasureDescriptor
 
 
@@ -12,6 +12,11 @@ def format_number(v, places, max_value=None):
     if max_value and v > max_value:
         return '> {:.{}f}'.format(round(max_value, places), places).replace('.', ',')
     return '{:.{}f}'.format(round(v, places), places).replace('.', ',')
+
+
+# POZYTYWNA = Color(color='magenta', text='Pozytywna')
+POZYTYWNA = 'Pozytywna'
+NEGATYWNA = Color(color='red', text='Negatywna')
 
 
 class PetlaZwarciaTNS(MeasureDescriptor):
@@ -61,7 +66,7 @@ class PetlaZwarciaTNS(MeasureDescriptor):
             row['fuse_characteristics'],
             format_number(row['In'], 2), format_number(row['Ia'], 2),
             format_number(row['Zs'], 2), format_number(Za, 2),
-            format_number(Ik, 2), 'Pozytywna' if row['Zs'] <= Za else 'Negatywna'
+            format_number(Ik, 2), POZYTYWNA if row['Zs'] <= Za else NEGATYWNA
         )
 
 
@@ -183,7 +188,7 @@ class TestRCDta(MeasureDescriptor):
             format_number(row['In_mA'], 0),
             format_number(row['ta'] * 1e3, 0), format_number(row['trcd'] * 1e3, 0),
             format_number(row['UB'], 1), format_number(row['UI'], 0),
-            'Pozytywna' if (row['trcd'] <= row['ta'] and row['UB'] <= row['UI']) else 'Negatywna',
+            POZYTYWNA if (row['trcd'] <= row['ta'] and row['UB'] <= row['UI']) else NEGATYWNA,
         )
 
 
@@ -223,5 +228,5 @@ class RezystancjaIzolacji(MeasureDescriptor):
             format_number(row['R_LPE'] * 1e-6, 0, max_value=250),
             format_number(row['R_LN'] * 1e-6, 0, max_value=250),
             format_number(row['R_a'] * 1e-6, 0),
-            'Pozytywna' if (row['R_LPE'] >= row['R_a'] and row['R_LN'] >= row['R_a']) else 'Negatywna',
+            POZYTYWNA if (row['R_LPE'] >= row['R_a'] and row['R_LN'] >= row['R_a']) else NEGATYWNA,
         )

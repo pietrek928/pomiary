@@ -12,8 +12,14 @@ class ValueSampler:
             vals_h = tuple((v - avg) ** 2 for v in values if v >= avg)
             # if not var or n == 1:
             #     var = avg * .07
-            self._min = avg - (sum(vals_l) ** .5 / len(vals_l))
-            self._max = avg + (sum(vals_h) ** .5 / len(vals_h))
+            if vals_l:
+                self._min = avg - (sum(vals_l) ** .5 / len(vals_l))
+            else:
+                self._min = avg
+            if vals_h:
+                self._max = avg + (sum(vals_h) ** .5 / len(vals_h))
+            else:
+                self._max = avg
             self._values = None
         else:
             self._values = values

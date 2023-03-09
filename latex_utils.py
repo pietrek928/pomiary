@@ -1,4 +1,5 @@
 from contextlib import contextmanager
+from datetime import datetime
 from typing import Union, Iterable, Tuple, Optional, List
 
 from pydantic import BaseModel
@@ -6,6 +7,8 @@ from pydantic import BaseModel
 from sonel_sql import Tree
 
 ContentItem = Union[str, 'LatexObject', Tuple]
+
+CE_DATA = f'{datetime.now().month:02d}/{datetime.now().year}'
 
 
 class Ctx:
@@ -202,6 +205,14 @@ class Bold(ItemContainer):
         ctx.put(f'\\textbf{{{_render_to_str(self.i)}}}')
 
 
+class Color(LatexObject):
+    color: str
+    text: ContentItem
+
+    def render(self, ctx: Ctx):
+        ctx.put(f'\\textcolor{{{self.color}}}{{{_render_to_str(self.text)}}}')
+
+
 class MultiLine(LatexObject):
     items: Tuple[ContentItem, ...]
 
@@ -289,7 +300,7 @@ class Attachment(Content):
 
 
 class MeasurePageSetup(LatexObject):
-    ce_data: str = '02/2022'
+    ce_data: str = CE_DATA
 
     firma: ContentItem = '.'
     data_pomiarow: ContentItem = '.'
@@ -319,7 +330,7 @@ class MeasurePageSetup(LatexObject):
 
 
 class MeasureTitlePage(LatexObject):
-    ce_data: str = '02/2022'
+    ce_data: str = CE_DATA
 
     firma: ContentItem = '.'
     data_pomiarow: ContentItem = '.'
@@ -353,7 +364,7 @@ class MeasureTitlePage(LatexObject):
 
 
 class MeasureDescriptionPage(LatexObject):
-    ce_data: str = '02/2022'
+    ce_data: str = CE_DATA
     wykonawca: ContentItem = ('.', '.', '.', '.')
     zleceniodawca: ContentItem = ('.', '.', '.', '.')
     miejsce: ContentItem = ('.', '.', '.', '.')
