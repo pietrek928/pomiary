@@ -7,6 +7,7 @@ panele-reg
 .idea
 **/__pycache__
 **/*.jpg
+**/*.pdf
 **/*.so
 **/*.egg-info
 **/build

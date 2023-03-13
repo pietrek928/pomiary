@@ -290,6 +290,21 @@ class Images(LatexObject):
             ctx.cmd('includegraphics', im, scale=self.scale)
 
 
+class PDF(LatexObject):
+    pages: Optional[Tuple[int, ...]] = None
+    file: str
+
+    def __init__(self, file, **kwargs):
+        super().__init__(file=file, **kwargs)
+
+    def render(self, ctx: Ctx):
+        if self.pages:
+            pages = f'{{{",".join(map(str, self.pages))}}}'
+        else:
+            pages = '-'
+        ctx.cmd('includepdf', self.file, pages=pages)
+
+
 class Attachment(Content):
     name: ContentItem = '.'
 
