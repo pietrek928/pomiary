@@ -230,3 +230,25 @@ class RezystancjaIzolacji(MeasureDescriptor):
             format_number(row['R_a'] * 1e-6, 0),
             POZYTYWNA if (row['R_LPE'] >= row['R_a'] and row['R_LN'] >= row['R_a']) else NEGATYWNA,
         )
+
+
+class Uziemienie(MeasureDescriptor):
+    title: str = 'Stan instalacji odgromowej i uziomów'
+
+    def get_columns(self):
+        return (
+            Math('R_{S} [\\Omega]'),
+            Math('R_{S\'} [\\Omega]'),
+            Math('R_{a} [\\Omega]'),
+            'Ciągłość',
+            'Ocena'
+        )
+
+    def format_row(self, row: Dict[str, Any]) -> Tuple[ContentItem, ...]:
+        return (
+            format_number(row['R_S'], 1),
+            format_number(row['R_SP'], 1),
+            format_number(row['R_a'], 1),
+            'Zachowana',
+            POZYTYWNA,
+        )

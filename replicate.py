@@ -1,7 +1,5 @@
-from math import log10, ceil
-from re import sub, findall, split
-from sys import stderr
-from typing import Iterable, Mapping
+from re import sub
+from typing import Iterable, Mapping, Dict, Any
 
 from pysqlite3 import Cursor
 
@@ -18,7 +16,8 @@ def name_to_pattern(name):
 
 def fill_pattern(pattern, nums):
     return tuple(
-        pattern.replace('XXX', str(n).rjust(int(ceil(log10(max(nums)))), ' '))
+        # pattern.replace('XXX', str(n).rjust(int(ceil(log10(max(nums)))), ' '))
+        pattern.replace('XXX', str(n))
         for n in nums
     )
 
@@ -47,4 +46,17 @@ def fill_for_node(
         place_name: {**sample_vals(
             samplers, extracted_data.get(place_name) or {}
         ), **override} for place_name in set(names).union(db_data.keys())
+    }
+
+
+def sample_points(
+        extracted_data: Dict[str, Dict[str, Any]],
+        names: Iterable[str] = ()
+):
+    samplers = get_samplers_for_items(extracted_data.values())
+
+    return {
+        place_name: sample_vals(
+            samplers, extracted_data.get(place_name) or {}
+        ) for place_name in set(names).union(extracted_data.keys())
     }
