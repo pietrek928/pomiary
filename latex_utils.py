@@ -2,13 +2,17 @@ from contextlib import contextmanager
 from datetime import datetime
 from typing import Union, Iterable, Tuple, Optional, List
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from sonel_sql import Tree
 
 ContentItem = Union[str, 'LatexObject', Tuple]
 
 CE_DATA = f'{datetime.now().month:02d}/{datetime.now().year}'
+
+
+def _field_factory(default):
+    return Field(default_factory=lambda: default)
 
 
 class Ctx:
@@ -231,8 +235,8 @@ class LongTable(LatexObject):
     caption: ContentItem = ''
     first_header: Optional[ContentItem] = None
     columns: Tuple[ContentItem, ...] = ()
-    foot: ContentItem = Content('\\hline')
-    last_foot: ContentItem = Content('\\hline')
+    foot: ContentItem = _field_factory(Content('\\hline'))
+    last_foot: ContentItem = _field_factory(Content('\\hline'))
     rows: Iterable[Tuple[ContentItem, ...]] = ()
 
     def _render_columns(self, ctx: Ctx):
