@@ -60,3 +60,15 @@ def sample_points(
             samplers, extracted_data.get(place_name) or {}
         ) for place_name in set(names).union(extracted_data.keys())
     }
+
+
+def generate_points(
+        names: Iterable[str] = (), sample_values: Iterable = ()
+):
+    samplers = get_samplers_for_items(sample_values)
+
+    return {
+        place_name: sample_vals(
+            samplers, {}
+        ) for place_name in set(names)
+    }
