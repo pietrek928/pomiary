@@ -232,6 +232,67 @@ class RezystancjaIzolacji(MeasureDescriptor):
         )
 
 
+class RezystancjaIzolacjiAll(MeasureDescriptor):
+    title: str = 'Rezystancja izolacji zasilenia'
+    measure_ids: Tuple[str, ...] = ()
+
+    def get_description(self) -> ContentItem:
+        return (
+            Content(Math('R_{L1-L2} [G\\Omega]'), 'Rezystancja między L1 a L2'),
+            Content(Math('R_{L2-L3} [G\\Omega]'), 'Rezystancja między L2 a L3'),
+            Content(Math('R_{L3-L1} [G\\Omega]'), 'Rezystancja między L3 a L1'),
+            Content(Math('R_{L1-N} [G\\Omega]'), 'Rezystancja między L1 a N'),
+            Content(Math('R_{L2-N} [G\\Omega]'), 'Rezystancja między L2 a N'),
+            Content(Math('R_{L3-N} [G\\Omega]'), 'Rezystancja między L3 a N'),
+            Content(Math('R_{L1-PE} [G\\Omega]'), 'Rezystancja między L1 a PE'),
+            Content(Math('R_{L2-PE} [G\\Omega]'), 'Rezystancja między L2 a PE'),
+            Content(Math('R_{L3-PE} [G\\Omega]'), 'Rezystancja między L3 a PE'),
+            Content(Math('R_{N-PE} [G\\Omega]'), 'Rezystancja między N a PE'),
+            Content(Math('R_{a} [G\\Omega]'), 'Rezystancja wymagana'),
+            Content(
+                'Ocena: dopuszczalna rezystancja ',
+                Math('R_{i} <= R_{a}'),
+            ),
+        )
+
+    def get_columns(self):
+        return (
+            Math('R_{L1-L2} [G\\Omega]'),
+            Math('R_{L2-L3} [G\\Omega]'),
+            Math('R_{L3-L1} [G\\Omega]'),
+            Math('R_{L1-N} [G\\Omega]'),
+            Math('R_{L2-N} [G\\Omega]'),
+            Math('R_{L3-N} [G\\Omega]'),
+            Math('R_{L1-PE} [G\\Omega]'),
+            Math('R_{L2-PE} [G\\Omega]'),
+            Math('R_{L3-PE} [G\\Omega]'),
+            Math('R_{N-PE} [G\\Omega]'),
+            Math('R_{a} [G\\Omega]'),
+            'Ocena'
+        )
+
+    def compute_row(self, data: Dict[str, Dict[str, str]]) -> Dict[str, Any]:
+        return dict()
+
+    def format_row(self, row: Dict[str, Any]) -> Tuple[ContentItem, ...]:
+        return (
+            format_number(row['R_L1L2'] * 1e-9, 0, max_value=2),
+            format_number(row['R_L2L3'] * 1e-9, 0, max_value=2),
+            format_number(row['R_L3L1'] * 1e-9, 0, max_value=2),
+            format_number(row['R_L1N'] * 1e-9, 0, max_value=2),
+            format_number(row['R_L2N'] * 1e-9, 0, max_value=2),
+            format_number(row['R_L3N'] * 1e-9, 0, max_value=2),
+            format_number(row['R_L1PE'] * 1e-9, 0, max_value=2),
+            format_number(row['R_L2PE'] * 1e-9, 0, max_value=2),
+            format_number(row['R_L3PE'] * 1e-9, 0, max_value=2),
+            format_number(row['R_NPE'] * 1e-9, 0, max_value=2),
+            format_number(row['R_a'] * 1e-9, 0),
+            POZYTYWNA if max(
+                v for k, v in row.items() if k.startswith('R_')
+            ) <= row['R_a'] else NEGATYWNA,
+        )
+
+
 class Uziemienie(MeasureDescriptor):
     title: str = 'Stan instalacji odgromowej i uziomów'
 
