@@ -5,7 +5,7 @@ from typing import Tuple, Dict, Any
 from pydantic import BaseModel
 from pysqlite3 import Cursor
 
-from latex_utils import LongTable, ContentItem, Bold
+from latex_utils import LongTable, ContentItem, Bold, Center
 from sonel_sql import query_models, Tree, Measurement, MeasurementValue
 
 
@@ -85,7 +85,7 @@ def _generate_measurements_rows(measure_descr: MeasureDescriptor, measure_data):
 def format_measure_table(measure_descr: MeasureDescriptor, meas_data):
     return LongTable(
         caption=measure_descr.title,
-        columns=('Badany punkt',) + measure_descr.get_columns(),
+        columns=('Punkt',) + measure_descr.get_columns(),
         rows=_generate_measurements_rows(measure_descr, meas_data),
     )
 

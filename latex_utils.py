@@ -145,6 +145,11 @@ class Center(Content):
         with ctx.begin('center'):
             super().render(ctx)
 
+class Landscape(Content):
+    def render(self, ctx: Ctx):
+        with ctx.begin('landscape'):
+            super().render(ctx)
+
 
 class DotList(LatexObject):
     items: Iterable[ContentItem] = ()
@@ -428,9 +433,18 @@ class MeasureDescriptionPage(LatexObject):
 
 class MeasurePlaceBlock(Center):
     place: Tree
+    landscape: bool = False
+
+    def _render_table(self, ctx: Ctx):
+        ctx.put(Bold(
+            self.place.name or self.place.shortName
+        )).break_()
+        super().render(ctx)
 
     def render(self, ctx: Ctx):
-        ctx.cmd('newpage') \
-            .put(Bold(self.place.name or self.place.shortName)) \
-            .break_()
-        super().render(ctx)
+        ctx.cmd('newpage')
+        if self.landscape:
+            with ctx.begin('landscape'):
+                self._render_table(ctx)
+        else:
+            self._render_table(ctx)

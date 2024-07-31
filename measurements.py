@@ -251,23 +251,23 @@ class RezystancjaIzolacjiAll(MeasureDescriptor):
             Content(Math('R_{a} [G\\Omega]'), 'Rezystancja wymagana'),
             Content(
                 'Ocena: dopuszczalna rezystancja ',
-                Math('R_{i} <= R_{a}'),
+                Math('R_{i} >= R_{a}'),
             ),
         )
 
     def get_columns(self):
         return (
-            Math('R_{L1-L2} [G\\Omega]'),
-            Math('R_{L2-L3} [G\\Omega]'),
-            Math('R_{L3-L1} [G\\Omega]'),
-            Math('R_{L1-N} [G\\Omega]'),
-            Math('R_{L2-N} [G\\Omega]'),
-            Math('R_{L3-N} [G\\Omega]'),
-            Math('R_{L1-PE} [G\\Omega]'),
-            Math('R_{L2-PE} [G\\Omega]'),
-            Math('R_{L3-PE} [G\\Omega]'),
-            Math('R_{N-PE} [G\\Omega]'),
-            Math('R_{a} [G\\Omega]'),
+            MultiLine(Math('R_{L1-L2}'), Math('[G\\Omega]')),
+            MultiLine(Math('R_{L2-L3}'), Math('[G\\Omega]')),
+            MultiLine(Math('R_{L3-L1}'), Math('[G\\Omega]')),
+            MultiLine(Math('R_{L1-N}'), Math('[G\\Omega]')),
+            MultiLine(Math('R_{L2-N}'), Math('[G\\Omega]')),
+            MultiLine(Math('R_{L3-N}'), Math('[G\\Omega]')),
+            MultiLine(Math('R_{L1-PE}'), Math('[G\\Omega]')),
+            MultiLine(Math('R_{L2-PE}'), Math('[G\\Omega]')),
+            MultiLine(Math('R_{L3-PE}'), Math('[G\\Omega]')),
+            MultiLine(Math('R_{N-PE}'), Math('[G\\Omega]')),
+            MultiLine(Math('R_{a}'), Math('[G\\Omega]')),
             'Ocena'
         )
 
@@ -289,7 +289,7 @@ class RezystancjaIzolacjiAll(MeasureDescriptor):
             format_number(row['R_a'] * 1e-9, 0),
             POZYTYWNA if max(
                 v for k, v in row.items() if k.startswith('R_')
-            ) <= row['R_a'] else NEGATYWNA,
+            ) >= row['R_a'] else NEGATYWNA,
         )
 
 
