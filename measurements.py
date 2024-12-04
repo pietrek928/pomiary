@@ -313,3 +313,22 @@ class Uziemienie(MeasureDescriptor):
             'Zachowana',
             POZYTYWNA,
         )
+
+
+class RezystancjaUziemienia(MeasureDescriptor):
+    title: str = 'Rezystancja uziemienia'
+
+    def get_columns(self):
+        return (
+            Math('R_{S} [\\Omega]'),
+            Math('R_{a} [\\Omega]'),
+            'Ocena'
+        )
+
+    def format_row(self, row: Dict[str, Any]) -> Tuple[ContentItem, ...]:
+        return (
+            format_number(row['R_S'], 2),
+            format_number(row['R_a'], 2),
+            POZYTYWNA,
+        )
+
