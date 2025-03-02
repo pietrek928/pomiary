@@ -14,8 +14,8 @@ def format_number(v, places, max_value=None):
     return '{:.{}f}'.format(round(v, places), places).replace('.', ',')
 
 
-# POZYTYWNA = Color(color='magenta', text='Pozytywna')
-POZYTYWNA = 'Pozytywna'
+POZYTYWNA = Color(color='green', text='Pozytywna')
+# POZYTYWNA = 'Pozytywna'
 NEGATYWNA = Color(color='red', text='Negatywna')
 
 
@@ -249,10 +249,10 @@ class RezystancjaIzolacjiAll(MeasureDescriptor):
             Content(Math('R_{L3-PE} [G\\Omega]'), 'Rezystancja między L3 a PE'),
             Content(Math('R_{N-PE} [G\\Omega]'), 'Rezystancja między N a PE'),
             Content(Math('R_{a} [G\\Omega]'), 'Rezystancja wymagana'),
-            Content(
-                'Ocena: dopuszczalna rezystancja ',
-                Math('R_{i} >= R_{a}'),
-            ),
+            # Content(
+            #     'Ocena: dopuszczalna rezystancja ',
+            #     Math('R_{i} >= R_{a}'),
+            # ),
         )
 
     def get_columns(self):
@@ -268,7 +268,7 @@ class RezystancjaIzolacjiAll(MeasureDescriptor):
             MultiLine(Math('R_{L3-PE}'), Math('[G\\Omega]')),
             MultiLine(Math('R_{N-PE}'), Math('[G\\Omega]')),
             MultiLine(Math('R_{a}'), Math('[G\\Omega]')),
-            'Ocena'
+            # 'Ocena'
         )
 
     def compute_row(self, data: Dict[str, Dict[str, str]]) -> Dict[str, Any]:
@@ -287,9 +287,9 @@ class RezystancjaIzolacjiAll(MeasureDescriptor):
             format_number(row['R_L3PE'] * 1e-9, 0, max_value=2),
             format_number(row['R_NPE'] * 1e-9, 0, max_value=2),
             format_number(row['R_a'] * 1e-9, 0),
-            POZYTYWNA if max(
-                v for k, v in row.items() if k.startswith('R_')
-            ) >= row['R_a'] else NEGATYWNA,
+            # POZYTYWNA if max(
+            #     v for k, v in row.items() if k.startswith('R_')
+            # ) >= row['R_a'] else NEGATYWNA,
         )
 
 
@@ -321,14 +321,12 @@ class RezystancjaUziemienia(MeasureDescriptor):
     def get_columns(self):
         return (
             Math('R_{S} [\\Omega]'),
-            Math('R_{a} [\\Omega]'),
-            'Ocena'
+            Math('R_{S\'} [\\Omega]'),
         )
 
     def format_row(self, row: Dict[str, Any]) -> Tuple[ContentItem, ...]:
         return (
             format_number(row['R_S'], 2),
-            format_number(row['R_a'], 2),
-            POZYTYWNA,
+            format_number(row['R_S'] * 1.6, 2),
         )
 

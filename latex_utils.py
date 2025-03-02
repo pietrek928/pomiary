@@ -8,12 +8,12 @@ from sonel_sql import Tree
 
 ContentItem = Union[str, 'LatexObject', Tuple]
 
-CE_DATA = f'{datetime.now().month:02d}/{datetime.now().year}'
-
+def get_ce_date(date):
+    _, m, y = date.split('.')
+    return f'{int(m):02d}/{y}'
 
 def _field_factory(default):
     return Field(default_factory=lambda: default)
-
 
 class Ctx:
     # TODO: text with escape ?
@@ -324,8 +324,7 @@ class Attachment(Content):
 
 
 class MeasurePageSetup(LatexObject):
-    ce_data: str = CE_DATA
-
+    ce_data: str
     firma: ContentItem = '.'
     data_pomiarow: ContentItem = '.'
     pomiarowcy: ContentItem = '.'
@@ -354,8 +353,7 @@ class MeasurePageSetup(LatexObject):
 
 
 class MeasureTitlePage(LatexObject):
-    ce_data: str = CE_DATA
-
+    ce_data: str
     firma: ContentItem = '.'
     data_pomiarow: ContentItem = '.'
     wykonawca: ContentItem = '.'
@@ -388,7 +386,8 @@ class MeasureTitlePage(LatexObject):
 
 
 class MeasureDescriptionPage(LatexObject):
-    ce_data: str = CE_DATA
+    ce_data: str
+
     wykonawca: ContentItem = ('.', '.', '.', '.')
     zleceniodawca: ContentItem = ('.', '.', '.', '.')
     miejsce: ContentItem = ('.', '.', '.', '.')
