@@ -246,7 +246,6 @@ class LongTable(LatexObject):
 
     def _render_columns(self, ctx: Ctx):
         if self.columns:
-            ctx.cmd('hline')
             ctx.put(self.columns[0])
             # ctx.cmd('multicolumn', '1', '|c|', _render_to_str(self.columns[0]))
             for col in self.columns[1:]:
@@ -254,7 +253,6 @@ class LongTable(LatexObject):
                 ctx.put(col)
                 # ctx.cmd('multicolumn', '1', 'c|', _render_to_str(col))
             ctx.break_()
-            ctx.cmd('hline')
 
     def _render_row(self, ctx: Ctx, row: Tuple[ContentItem, ...]):
         ctx.put(row[0])
@@ -272,7 +270,9 @@ class LongTable(LatexObject):
 
             if self.first_header is not None:
                 ctx.put(self.first_header)
+            ctx.cmd('hline')
             self._render_columns(ctx)
+            ctx.cmd('hline')
             ctx.cmd('endfirsthead')
 
             self._render_columns(ctx)
@@ -281,6 +281,7 @@ class LongTable(LatexObject):
             ctx.put(self.foot)
             ctx.cmd('endfoot')
             ctx.put(self.last_foot)
+            ctx.cmd('hline')
             ctx.cmd('endlastfoot')
 
             for row in self.rows:
